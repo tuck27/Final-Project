@@ -107,25 +107,35 @@ const gameOver = (isVictory) => {
     }, 300);
 };
 const initGame = (button, clickedLetter) => {
+    button.disabled = true;
+
     if (currentWord.includes(clickedLetter)) {
         [...currentWord].forEach((letter, index) => {
             if (letter === clickedLetter) {
                 correctLetters.push(letter);
-                wordDisplay.querySelectorAll("li")[index]
-                    .innerText = letter;
-                wordDisplay.querySelectorAll("li")[index]
-                    .classList.add("guessed");
+                const letterEls = wordDisplay.querySelectorAll("li");
+                letterEls[index].innerText = letter;
+                letterEls[index].classList.add("guessed");
             }
         });
-    }                  
-        button.disabled = true;
+    } else {
+        // Increment incorrect guesses if letter is not in the word
+        wrongGuessCount++;
         guessesText.innerText = `${wrongGuessCount} / ${maxGuesses}`;
+    }
 
-        if (wrongGuessCount === maxGuesses)
-            return gameOver(false);
-        if (correctLetters.length === currentWord.length)
-            return gameOver(true);
-    };
+    // Check for game over (loss)
+    if (wrongGuessCount === maxGuesses) {
+        return gameOver(false);
+    }
+
+    // Check for win (fixes repeated letters bug with Set)
+    const uniqueLetters = new Set(currentWord);
+    const guessedLettersSet = new Set(correctLetters);
+    if ([...uniqueLetters].every((l) => guessedLettersSet.has(l))) {
+        return gameOver(true);
+    }
+};
 
     //Creating keyboard buttons 
     //and adding event listerers
@@ -139,3 +149,6 @@ const initGame = (button, clickedLetter) => {
     }
     getRandomWord();
     playAgainBtn.addEventListener("click", getRandomWord);
+
+    //if (!correctLetters.includes(letter)) correctLetters.push(letter);
+//timerDisplay.innerText = `Time left: ${timeLeft}s`;
